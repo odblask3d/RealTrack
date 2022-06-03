@@ -16,7 +16,7 @@ add_executable(RealTrack
 )
 
 # Add link libraries                               
-target_link_libraries(RealTrack RealTrackLib  NVLib ${OpenCV_LIBS})
+target_link_libraries(RealTrack RealTrackLib  NVLib ${OpenCV_LIBS} uuid)
 
 # Copy Resources across
 add_custom_target(resource_copy ALL

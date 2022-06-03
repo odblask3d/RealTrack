@@ -12,7 +12,10 @@
 using namespace std;
 
 #include <NVLib/Logger.h>
+#include <NVLib/DisplayUtils.h>
+
 #include <RealTrackLib/ArgUtils.h>
+#include <RealTrackLib/LoadUtils.h>
 
 namespace NVL_App
 {
@@ -21,6 +24,10 @@ namespace NVL_App
 	private:
 		NVLib::Parameters * _parameters;
 		NVLib::Logger* _logger;
+
+		string _inputFolder;
+		Calibration * _calibration;
+
 	public:
 		Engine(NVLib::Logger* logger, NVLib::Parameters * parameters);
 		~Engine();

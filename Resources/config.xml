@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
 <opencv_storage>
-    <parameter_1>"9"</parameter_1>
+    <input_folder>"/home/trevor/Data/Couch"</input_folder>
+    <image_count>"211"</image_count>
 </opencv_storage>
