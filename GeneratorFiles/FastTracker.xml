@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<class>
+
+    <namespace>NVL_App</namespace>
+    <solution>RealTrackLib</solution>
+    <name>FastTracker</name>
+    <description>Defines a tracker that uses "FAST" features for pose estimation</description>
+
+    <includes>
+        <include name="iostream" namespace="std" local="false" />
+        <include name="opencv2/opencv.hpp" namespace="cv" local="false" />
+        <include name="NVLib/Models/DepthFrame.h" local="false" />
+        <include name="Calibration.h" local="true" />
+        <include name="FastDetector.h" local="true" />
+    </includes>
+
+    <variables>
+        <variable type="Calibration *" name="calibration" code="00" />
+        <variable type="NVLib::DepthFrame *" name="frame" code="10" />
+        <variable type="vector<KeyPoint>" name="keypoints" code="10" />
+    </variables>
+
+    <constructors>
+
+        <constructor type="custom">
+            <parameter type="Calibration *" name="calibration" description="The incomming calibration parameters" />
+            <parameter type="NVLib::DepthFrame *" name="firstFrame" description="The first frame within the system" />
+        </constructor>
+
+    </constructors>
+
+    <methods>
+
+        <!-- Defines the logic for estimating the pose from the feature points -->
+        <method section="Estimate Pose" access="public" return="Mat" name="GetPose" description="Add the logic to estimate the pose from the next frame within the sequence" inline="false">
+            <parameter type="NVLib::DepthFrame *" name="frame" description="The frame that we are getting the pose from" />
+            <parameter type="Vec2d&" name="error" description="The output reprojection error" />
+            <parameter type="bool" name="freePrevious" description="Indicates whether the memory for the previous frame can be freed or not" />
+        </method>
+ 
+    </methods>
+
+</class>
