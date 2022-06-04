@@ -30,8 +30,8 @@ namespace NVL_App
 		FastDetector(int blockSize) : _blockSize(blockSize) { _frame = nullptr; }
 		~FastDetector() { if (_frame != nullptr) delete _frame; }
 
-		void Extract(Mat& image, vector<KeyPoint>& keypoints, Mat& descriptors); 
-		void Match(vector<KeyPoint>& kp_1, vector<KeyPoint>& kp_2, Mat& descriptor_1, Mat& descriptor_2, vector<FeatureMatch *>& output);
+		void Extract(Mat& image, vector<KeyPoint>& keypoints); 
+		void Match(vector<KeyPoint>& kp_1, vector<KeyPoint>& kp_2, vector<FeatureMatch *>& output);
 
 		void SetFrame(Mat& image1, Mat& image2);
 	private:

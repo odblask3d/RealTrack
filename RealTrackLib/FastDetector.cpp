@@ -17,9 +17,8 @@ using namespace NVL_App;
  * @brief Extract features from the given image
  * @param image The image that we are extracting feature from
  * @param keypoints The list of keypoints that we are extracting from the image
- * @param descriptors Descriptors associated with the application
  */
-void FastDetector::Extract(Mat& image, vector<KeyPoint>& keypoints, Mat& descriptors)
+void FastDetector::Extract(Mat& image, vector<KeyPoint>& keypoints)
 {
 	Ptr<FeatureDetector> detector = FastFeatureDetector::create();
     vector<KeyPoint> points; detector->detect(image, points);
@@ -61,11 +60,9 @@ int FastDetector::GetIndex(const Point2d& point, int blockSize, int width)
  * @brief Match features across images
  * @param kp_1 The list of keypoints from the first image
  * @param kp_2 The list of keypoints from the second image
- * @param descriptor_1 The list of descriptors for the first image
- * @param descriptor_2 The list of descriptors for the second image
  * @param output The list of resultant feature matches for the system
  */
-void FastDetector::Match(vector<KeyPoint>& kp_1, vector<KeyPoint>& kp_2, Mat& descriptor_1, Mat& descriptor_2, vector<FeatureMatch *>& output)
+void FastDetector::Match(vector<KeyPoint>& kp_1, vector<KeyPoint>& kp_2, vector<FeatureMatch *>& output)
 {
 	// Validate that the frame is set
 	if (_frame == nullptr) throw runtime_error("Right now we are using a setting stereo frame hack - and it was detected that stereo frame was not set.");

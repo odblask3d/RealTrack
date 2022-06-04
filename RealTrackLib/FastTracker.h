@@ -36,5 +36,12 @@ namespace NVL_App
 
 		inline NVLib::DepthFrame *& GetFrame() { return _frame; }
 		inline vector<KeyPoint>& GetKeypoints() { return _keypoints; }
+	private:
+		Mat FindPoseProcess(vector<KeyPoint>& keypoints_2, vector<FeatureMatch *>& matches, Vec2d& error);
+		void GetScenePoints(Mat& camera, Mat& depth, vector<FeatureMatch *>& matches, vector<KeyPoint>& keypoints, vector<Point3f>& out);
+		void GetImagePoints(vector<KeyPoint>& keypoints, vector<Point2f>& out);
+		void FilterBadDepth(vector<Point3f>& scenePoints, vector<Point2f>& imagePoints);
+		Mat EstimatePose(Mat& camera, vector<Point3f>& scenePoints, vector<Point2f>& imagePoints);	
+		void EstimateError(Mat& camera, Mat& pose, vector<Point3f>& scenePoints, vector<Point2f>& imagePoints);
 	};
 }
