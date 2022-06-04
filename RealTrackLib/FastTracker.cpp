@@ -72,30 +72,73 @@ Mat FastTracker::GetPose(NVLib::DepthFrame * frame, Vec2d& error, bool freePrevi
  */
 Mat FastTracker::FindPoseProcess(vector<KeyPoint>& keypoints_2, vector<FeatureMatch *>& matches, Vec2d& error) 
 {
-	throw runtime_error("Not Implemented");
+	// Extract the camera matrix
+	Mat camera = _calibration->GetMatrix();
+
+	// Retrieve the scene points
+	auto scenePoints = vector<Point3f>(); scenePoints.clear();
+	GetScenePoints(_calibration, _frame->GetDepth(), matches, _keypoints, scenePoints);
+
+	// Retrieve the image points
+	auto imagePoints = vector<Point2f>(); imagePoints.clear();
+	GetImagePoints(keypoints_2, matches, imagePoints);
+
+	// Filter the points so that they all have valid depth values
+	FilterBadDepth(scenePoints, imagePoints);
+
+	// Determine the pose value
+	Mat pose = EstimatePose(camera, scenePoints, imagePoints);
+
+	// Determine the reprojection value
+	EstimateError(camera, pose, scenePoints, imagePoints, error);
+
+	// Return the pose result
+	return pose;
 }
 
 /**
  * @brief Extract the scene points from the system
- * @param camera The given camera matrix
+ * @param calibration The calibration details
  * @param depth The given depth map
  * @param matches The matches that were found
  * @param keypoints The list of associated key points
  * @param out The output scene points
  */
-void FastTracker::GetScenePoints(Mat& camera, Mat& depth, vector<FeatureMatch *>& matches, vector<KeyPoint>& keypoints, vector<Point3f>& out) 
+void FastTracker::GetScenePoints(Calibration * calibration, Mat& depth, vector<FeatureMatch *>& matches, vector<KeyPoint>& keypoints, vector<Point3f>& out) 
 {
-	throw runtime_error("Not Implemented");
+	for (auto match : matches) 
+	{
+		// Retrieve image points from the system
+		auto point = keypoints[match->GetFirstId()].pt;	
+
+		// Get the depth from the system
+		auto Z = ExtractDepth(depth, point);
+
+		// Handle the error case
+		if (Z <= 0) { out.push_back(Point3f()); continue; }
+
+		// Convert to a 3D point
+		auto X = (point.x - calibration->GetCenter().x) * (Z / calibration->GetFocals()[0]);
+		auto Y = (point.y - calibration->GetCenter().y) * (Z / calibration->GetFocals()[1]);
+		
+		// Add the 3D point to the collection
+		out.push_back(Point3f(X, Y, Z)); 
+	}
 }
 
 /**
  * @brief Extract the associated image points
  * @param keypoints The key points that we are extracting from
+ * @param matches The matches we are using in our system
  * @param out The list of output image points
  */
-void FastTracker::GetImagePoints(vector<KeyPoint>& keypoints, vector<Point2f>& out) 
+void FastTracker::GetImagePoints(vector<KeyPoint>& keypoints, vector<FeatureMatch *>& matches, vector<Point2f>& out) 
 {
-	throw runtime_error("Not Implemented");
+	for (auto match : matches) 
+	{
+		auto point = keypoints[match->GetSecondId()];
+		out.push_back(point.pt);
+	}
 }
 
 /**
@@ -105,7 +148,32 @@ void FastTracker::GetImagePoints(vector<KeyPoint>& keypoints, vector<Point2f>& o
  */
 void FastTracker::FilterBadDepth(vector<Point3f>& scenePoints, vector<Point2f>& imagePoints) 
 {
-	throw runtime_error("Not Implemented");
+	// Make sure that the incoming points are "kosher" 
+	assert(scenePoints.size() == imagePoints.size());
+
+	// Create a new container to hold the "validated" points
+	auto ascenePoints = vector<Point3f>(); auto aimagePoints = vector<Point2f>();
+
+	// Loop thru and validate the given points
+	for (auto i = 0; i < scenePoints.size(); i++) 
+	{
+		auto scenePoint = scenePoints[i]; auto imagePoint = imagePoints[i];
+
+		if (scenePoint.z > 300 && scenePoint.z < 2500) 
+		{
+			ascenePoints.push_back(scenePoint); aimagePoints.push_back(imagePoint);
+		}
+	}
+
+	// Clear the incoming points
+	scenePoints.clear(); imagePoints.clear();
+
+	// Copy the new values into the array
+	for (auto i = 0; i < ascenePoints.size(); i++) 
+	{
+		scenePoints.push_back(ascenePoints[i]);
+		imagePoints.push_back(aimagePoints[i]);
+	}
 }
 
 /**
@@ -117,7 +185,20 @@ void FastTracker::FilterBadDepth(vector<Point3f>& scenePoints, vector<Point2f>& 
  */
 Mat FastTracker::EstimatePose(Mat& camera, vector<Point3f>& scenePoints, vector<Point2f>& imagePoints) 
 {
-	throw runtime_error("Not Implemented");
+	// Convert the scene points and image points to doubles
+	auto dscene = vector<Point3d>(); auto dimage = vector<Point2d>();
+	for (auto i = 0; i < scenePoints.size(); i++) 
+	{
+		dscene.push_back(Point3d(scenePoints[i].x, scenePoints[i].y, scenePoints[i].z)); 
+		dimage.push_back(Point2d(imagePoints[i].x, imagePoints[i].y));
+	}
+
+	// Perform the pose estimation
+	Mat nodistortion = Mat_<double>::zeros(4,1);
+	Vec3d rvec, tvec; solvePnPRansac(dscene, dimage, camera, nodistortion, rvec, tvec, false, 9000, 3, 0.99, noArray(), SOLVEPNP_ITERATIVE);
+
+	// Return the result
+	return NVLib::PoseUtils::Vectors2Pose(rvec, tvec);
 }
 
 /**
@@ -126,8 +207,55 @@ Mat FastTracker::EstimatePose(Mat& camera, vector<Point3f>& scenePoints, vector<
  * @param pose The estimated pose
  * @param scenePoints The list of scene points
  * @param imagePoints The list of image points
+ * @param error The error point that we are getting
  */
-void FastTracker::EstimateError(Mat& camera, Mat& pose, vector<Point3f>& scenePoints, vector<Point2f>& imagePoints) 
+void FastTracker::EstimateError(Mat& camera, Mat& pose, vector<Point3f>& scenePoints, vector<Point2f>& imagePoints, Vec2d& error) 
 {
-	throw runtime_error("Not Implemented");
+	// Convert the scene points and image points to doubles
+	auto dscene = vector<Point3d>(); auto dimage = vector<Point2d>();
+	for (auto i = 0; i < scenePoints.size(); i++) 
+	{
+		dscene.push_back(Point3d(scenePoints[i].x, scenePoints[i].y, scenePoints[i].z)); 
+		dimage.push_back(Point2d(imagePoints[i].x, imagePoints[i].y));
+	}
+
+	// Convert the pose matrix to some vectors
+	auto rvec = Vec3d(); auto tvec = Vec3d(); NVLib::PoseUtils::Pose2Vectors(pose, rvec, tvec);
+
+	// Project 3D points to get "estimated points"
+	Mat nodistortion = Mat_<double>::zeros(4,1);
+	auto estimated = vector<Point2d>(); projectPoints(dscene, rvec, tvec, camera, nodistortion, estimated);
+
+	// Calculate the errors
+	auto errors = vector<double>();
+    for (auto i = 0; i < estimated.size(); i++) 
+    {
+        auto xDiff = dimage[i].x - estimated[i].x;
+        auto yDiff = dimage[i].y - estimated[i].y;
+        auto length = sqrt(xDiff * xDiff + yDiff * yDiff);
+		errors.push_back(length);
+    }
+
+	// Extract the error "summaries"
+	auto mean = Scalar(); auto stddev = Scalar();
+	cv::meanStdDev(errors, mean, stddev);
+	error[0] = mean[0]; error[1] = stddev[0];
+}
+
+//--------------------------------------------------
+// Utilities
+//--------------------------------------------------
+
+/**
+ * @brief Add the logic to extract depth from a given system
+ * @param depth The depth value that we are extracting
+ * @param location The location of the depth value that we are extracting
+ * @return float The depth value that we have gotten from the file
+ */
+float FastTracker::ExtractDepth(Mat& depth, const Point2f& location) 
+{
+	auto x = (int)round(location.x); auto y = (int)round(location.y);
+	if (x < 0 || y < 0 || x >= depth.cols || y >= depth.rows) return 0;
+	auto data = (float *) depth.data; auto index = x + y * depth.cols;
+	return data[index];
 }
