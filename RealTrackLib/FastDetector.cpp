@@ -7,7 +7,7 @@
 //--------------------------------------------------
 
 #include "FastDetector.h"
-using namespace NVL_Research;
+using namespace NVL_App;
 
 //--------------------------------------------------
 // Extract
@@ -65,7 +65,7 @@ int FastDetector::GetIndex(const Point2d& point, int blockSize, int width)
  * @param descriptor_2 The list of descriptors for the second image
  * @param output The list of resultant feature matches for the system
  */
-void FastDetector::Match(vector<KeyPoint>& kp_1, vector<KeyPoint>& kp_2, Mat& descriptor_1, Mat& descriptor_2, vector<NVL_Research::FeatureMatch *>& output)
+void FastDetector::Match(vector<KeyPoint>& kp_1, vector<KeyPoint>& kp_2, Mat& descriptor_1, Mat& descriptor_2, vector<FeatureMatch *>& output)
 {
 	// Validate that the frame is set
 	if (_frame == nullptr) throw runtime_error("Right now we are using a setting stereo frame hack - and it was detected that stereo frame was not set.");
@@ -162,7 +162,7 @@ void FastDetector::FilterOnError(vector<uchar>& status, vector<float>& errors, v
  * @param pointSet2 The second set of points that we are working with
  * @param output The output list of matches
  */
-void FastDetector::EpipolarFilter(vector<Point2f>& pointSet1, vector<Point2f>& pointSet2, vector<NVL_Research::FeatureMatch *>& output)
+void FastDetector::EpipolarFilter(vector<Point2f>& pointSet1, vector<Point2f>& pointSet2, vector<FeatureMatch *>& output)
 {
    	// Extract the matching points 
    	vector<Point2f> points_1; vector<Point2f> points_2;

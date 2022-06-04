@@ -21,10 +21,13 @@ using namespace NVL_App;
 Engine::Engine(NVLib::Logger* logger, NVLib::Parameters* parameters) : _logger(logger), _parameters(parameters)
 {
     // Get the image folder
-    _inputFolder = ArgUtils::GetString(parameters, "input_folder");
+    _folder = ArgUtils::GetString(parameters, "input_folder");
+
+    // Retrieve the image count
+    _imageCount = ArgUtils::GetInteger(parameters, "image_count");
 
     // Load Calibration
-    auto calibrationPath = NVLib::FileUtils::PathCombine(_inputFolder, "calibration.xml");
+    auto calibrationPath = NVLib::FileUtils::PathCombine(_folder, "calibration.xml");
     _calibration = LoadUtils::LoadCalibration(calibrationPath);
 }
 
@@ -45,17 +48,8 @@ Engine::~Engine()
  */
 void Engine::Run()
 {
-    auto imageCount = ArgUtils::GetInteger(_parameters, "image_count");
-    for (auto i = 0; i < imageCount; i++) 
-    {
-        auto frame = LoadUtils::LoadFrame(_inputFolder, i);
-
-        NVLib::DisplayUtils::ShowDepthFrame("Frame", frame, 1000);
-        auto key = waitKey(30);
-
-        delete frame;
-    
-        if (key == 27) break;
-    }
+    _logger->Log(1, "Creating a fast tracker");
+    auto firstFrame = LoadUtils::LoadFrame(_folder, 0);
+    auto tracker = FastTracker(_calibration, firstFrame);
 
 }

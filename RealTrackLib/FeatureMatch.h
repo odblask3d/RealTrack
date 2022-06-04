@@ -14,7 +14,7 @@ using namespace std;
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
-namespace NVL_Research
+namespace NVL_App
 {
 	class FeatureMatch
 	{

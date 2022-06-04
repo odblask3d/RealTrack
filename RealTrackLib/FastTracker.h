@@ -15,6 +15,7 @@ using namespace std;
 using namespace cv;
 
 #include <NVLib/Model/DepthFrame.h>
+
 #include "Calibration.h"
 #include "FastDetector.h"
 
@@ -26,8 +27,10 @@ namespace NVL_App
 		Calibration * _calibration;
 		NVLib::DepthFrame * _frame;
 		vector<KeyPoint> _keypoints;
+		FastDetector * _detector;
 	public:
-		FastTracker(Calibration * calibration, NVLib::DepthFrame * firstFrame) {}
+		FastTracker(Calibration * calibration, NVLib::DepthFrame * firstFrame);
+		~FastTracker();
 
 		Mat GetPose(NVLib::DepthFrame * frame, Vec2d& error, bool freePrevious);
 

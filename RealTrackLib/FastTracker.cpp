@@ -10,6 +10,28 @@
 using namespace NVL_App;
 
 //--------------------------------------------------
+// Constructors
+//--------------------------------------------------
+
+/**
+ * @brief Main Constructor
+ * @param calibration The main calibration parameters
+ * @param firstFrame The first frame within the series
+ */
+FastTracker::FastTracker(Calibration * calibration, NVLib::DepthFrame * firstFrame) : _calibration(calibration), _frame(firstFrame)
+{
+	Mat descriptors; _detector = new FastDetector(5); _detector->Extract(firstFrame->GetColor(), _keypoints, descriptors);
+}
+
+/**
+ * @brief Main Terminator
+ */
+FastTracker::~FastTracker() 
+{
+	delete _detector;
+}
+
+//--------------------------------------------------
 // Estimate Pose
 //--------------------------------------------------
 

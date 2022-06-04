@@ -16,6 +16,7 @@ using namespace std;
 
 #include <RealTrackLib/ArgUtils.h>
 #include <RealTrackLib/LoadUtils.h>
+#include <RealTrackLib/FastTracker.h>
 
 namespace NVL_App
 {
@@ -25,7 +26,8 @@ namespace NVL_App
 		NVLib::Parameters * _parameters;
 		NVLib::Logger* _logger;
 
-		string _inputFolder;
+		string _folder;
+		int _imageCount;
 		Calibration * _calibration;
 
 	public:

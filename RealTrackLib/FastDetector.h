@@ -19,7 +19,7 @@ using namespace cv;
 
 #include "FeatureMatch.h"
 
-namespace NVL_Research
+namespace NVL_App
 {
 	class FastDetector
 	{
