@@ -39,5 +39,6 @@ namespace NVL_App
 		void Run();
 	private:
 		void ConvertPoints(vector<Point2f>& floatPoints, vector<Point>& outputs);
+		Mat CreateCounter(Mat& depthMap);
 	};
 }

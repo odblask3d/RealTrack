@@ -30,6 +30,8 @@ namespace NVL_App
 		PoseImage(Mat& camera, NVLib::DepthFrame * frame);
 
 		Mat GetImage(Mat& pose);
+		Mat GetDepth(Mat& pose);
+
 		double GetScore(Mat& pose, Mat& matchImage, vector<double>& errors);
 
 		inline Mat& GetCloud() { return _cloud; }
