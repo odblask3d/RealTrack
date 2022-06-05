@@ -68,6 +68,7 @@ Mat PoseImage::GetDepth(Mat &pose)
 			auto X = cloudData[index * 6 + 0];
 			auto Y = cloudData[index * 6 + 1];
 			auto Z = cloudData[index * 6 + 2];
+			if (Z < 300 || Z > 2500) continue;
 
 			// Get the image location
 			auto imagePoint = NVLib::Math3D::Project(_camera, Point3d(X, Y, Z));
@@ -85,6 +86,60 @@ Mat PoseImage::GetDepth(Mat &pose)
 	// Add a median blur to get rid of some of the holes
 	medianBlur(result, result, 5);
 
+	// Return the result
+	return result;
+}
+
+//--------------------------------------------------
+// WarpCounter
+//--------------------------------------------------
+
+/**
+ * @brief Add the logic to warp the counter to the new "pose"
+ * @param pose The pose that we are warping the counter to
+ * @param counter The counter we are warping
+ * @return Mat The resultant new counter location
+ */
+Mat PoseImage::WarpCounter(Mat& pose, Mat& counter) 
+{
+	// Warp the point cloud wrt the pose
+	Mat tcloud = NVLib::CloudUtils::TransformCloud(_cloud, pose);
+	auto cloudData = (double *)tcloud.data;
+
+	// Create handles to the remap locations
+	Mat result = Mat_<uchar>::zeros(counter.size());
+
+	// Populate the remap tables
+	for (auto row = 0; row < counter.rows; row++)
+	{
+		for (auto column = 0; column < counter.cols; column++)
+		{
+			// Get the index
+			auto index = column + row * _cloud.cols;
+
+			// Get 3D image
+			auto X = cloudData[index * 6 + 0];
+			auto Y = cloudData[index * 6 + 1];
+			auto Z = cloudData[index * 6 + 2];
+			if (Z < 300 || Z > 2500) continue;
+
+			// Get the image location
+			auto imagePoint = NVLib::Math3D::Project(_camera, Point3d(X, Y, Z));
+
+			// Round Location
+			auto u = (int)round(imagePoint.x); auto v = (int)round(imagePoint.y);
+			if (u < 0 || v < 0 || u >= result.cols || v >= result.rows) continue;
+			auto imageIndex = u + v * result.cols;
+
+			// Perform Updates
+			result.data[imageIndex] = counter.data[index];
+		}
+	}
+
+	// Add a median blur to get rid of some of the holes
+	medianBlur(result, result, 5);
+
+	// Return the result
 	return result;
 }
 
