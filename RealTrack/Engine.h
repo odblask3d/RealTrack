@@ -17,6 +17,7 @@ using namespace std;
 #include <RealTrackLib/ArgUtils.h>
 #include <RealTrackLib/LoadUtils.h>
 #include <RealTrackLib/FastTracker.h>
+#include <RealTrackLib/PoseImage.h>
 
 namespace NVL_App
 {

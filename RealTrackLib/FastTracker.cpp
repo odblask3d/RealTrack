@@ -52,8 +52,8 @@ Mat FastTracker::GetPose(NVLib::DepthFrame * frame, Vec2d& error, bool freePrevi
 	auto matches = vector<FeatureMatch *>(); _detector->Match(_keypoints, keypoints, matches);
 
 	// DEBUG: Show the correspondences
-	auto stereoFrame = NVLib::StereoFrame(_frame->GetColor(), frame->GetColor());
-	ShowMatchingPoints(stereoFrame, matches, _keypoints, keypoints);
+	// auto stereoFrame = NVLib::StereoFrame(_frame->GetColor(), frame->GetColor());
+	// ShowMatchingPoints(stereoFrame, matches, _keypoints, keypoints);
 
 	// Estimate the pose
 	Mat pose = FindPoseProcess(keypoints, matches, error);

@@ -52,18 +52,23 @@ void Engine::Run()
     auto firstFrame = LoadUtils::LoadFrame(_folder, 0);
     auto tracker = FastTracker(_calibration, firstFrame);
 
-
     _logger->Log(1, "Estimating the pose of frame 1");
     auto frame = LoadUtils::LoadFrame(_folder, 1); auto error = Vec2d();
-    auto pose = tracker.GetPose(frame, error, true);
+    auto pose = tracker.GetPose(frame, error, false);
 
     cout << "----------------- Results: POSE extraction" << endl;
     cout << pose << endl << endl;
     cout << "Reprojection Error: " << error[0] << " ± " << error[1] << endl;
     cout << "----------------- End POSE extraction" << endl;
 
+    _logger->Log(1, "Showing the transform image");
+    Mat camera = _calibration->GetMatrix(); 
+    auto poseImage = PoseImage(camera, firstFrame);
+    Mat warpImage = poseImage.GetImage(pose); 
+    NVLib::DisplayUtils::ShowToggleImages("Toggle", warpImage, frame->GetColor(), 1000);
+
     _logger->Log(1, "Free working variables");
-    delete frame;
+    delete firstFrame; delete frame;
 }
 
 //--------------------------------------------------
