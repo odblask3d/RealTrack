@@ -25,12 +25,14 @@ namespace NVL_App
 	private:
 		Mat _camera;
 		Mat _cloud;
+		int _pixelCount;
 	public:
 		PoseImage(Mat& camera, NVLib::DepthFrame * frame);
 
 		Mat GetImage(Mat& pose);
-		double GetScore(Mat& pose, Mat& matchImage);
+		double GetScore(Mat& pose, Mat& matchImage, vector<double>& errors);
 
 		inline Mat& GetCloud() { return _cloud; }
+		inline int GetPixelCount() { return _pixelCount; }
 	};
 }

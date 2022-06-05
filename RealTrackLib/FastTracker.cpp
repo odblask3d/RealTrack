@@ -201,7 +201,7 @@ Mat FastTracker::EstimatePose(Mat& camera, vector<Point3f>& scenePoints, vector<
 
 	// Perform the pose estimation
 	Mat nodistortion = Mat_<double>::zeros(4,1);
-	Vec3d rvec, tvec; solvePnPRansac(dscene, dimage, camera, nodistortion, rvec, tvec, false, 9000, 3, 0.99, noArray(), SOLVEPNP_ITERATIVE);
+	Vec3d rvec, tvec; solvePnPRansac(dscene, dimage, camera, nodistortion, rvec, tvec, false, 9000, 8, 0.8, noArray(), SOLVEPNP_ITERATIVE);
 
 	// Return the result
 	return NVLib::PoseUtils::Vectors2Pose(rvec, tvec);

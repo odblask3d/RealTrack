@@ -48,24 +48,34 @@ Engine::~Engine()
  */
 void Engine::Run()
 {
+    auto index = 35;
+
     _logger->Log(1, "Creating a fast tracker");
-    auto firstFrame = LoadUtils::LoadFrame(_folder, 0);
+    auto firstFrame = LoadUtils::LoadFrame(_folder, index);
     auto tracker = FastTracker(_calibration, firstFrame);
 
     _logger->Log(1, "Estimating the pose of frame 1");
-    auto frame = LoadUtils::LoadFrame(_folder, 1); auto error = Vec2d();
-    auto pose = tracker.GetPose(frame, error, false);
+    auto frame = LoadUtils::LoadFrame(_folder, index + 1); auto error = Vec2d();
+    Mat pose = tracker.GetPose(frame, error, false);
 
-    cout << "----------------- Results: POSE extraction" << endl;
-    cout << pose << endl << endl;
+    cout << endl << "----------------- Results: POSE extraction" << endl;
+    cout << pose << endl;
     cout << "Reprojection Error: " << error[0] << " ± " << error[1] << endl;
-    cout << "----------------- End POSE extraction" << endl;
+    cout << "----------------- End POSE extraction" << endl << endl;
 
     _logger->Log(1, "Generating a pose image");
     Mat camera = _calibration->GetMatrix(); 
     auto poseImage = PoseImage(camera, firstFrame);
-    auto initialError = poseImage.GetScore(pose, frame->GetColor());
+    auto errors = vector<double>(); auto initialError = poseImage.GetScore(pose, frame->GetColor(), errors);
     _logger->Log(1, "Initial Error: %f", initialError);
+
+    _logger->Log(1, "Launching the refinement of the pose");
+    auto refiner = PhotoMatcher(&poseImage);
+    Mat pose2 = refiner.Refine(pose, frame->GetColor());
+
+    _logger->Log(1, "Show the associated warp image");
+    Mat warpImage = poseImage.GetImage(pose2);
+    NVLib::DisplayUtils::ShowToggleImages("Toggle", warpImage, frame->GetColor(), 1000);
 
     _logger->Log(1, "Free working variables");
     delete firstFrame; delete frame;
