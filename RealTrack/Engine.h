@@ -35,5 +35,7 @@ namespace NVL_App
 		~Engine();
 
 		void Run();
+	private:
+		void ConvertPoints(vector<Point2f>& floatPoints, vector<Point>& outputs);
 	};
 }

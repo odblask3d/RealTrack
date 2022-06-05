@@ -51,13 +51,19 @@ Mat FastTracker::GetPose(NVLib::DepthFrame * frame, Vec2d& error, bool freePrevi
 	_detector->SetFrame(_frame->GetColor(), frame->GetColor());
 	auto matches = vector<FeatureMatch *>(); _detector->Match(_keypoints, keypoints, matches);
 
+	// DEBUG: Show the correspondences
+	auto stereoFrame = NVLib::StereoFrame(_frame->GetColor(), frame->GetColor());
+	ShowMatchingPoints(stereoFrame, matches, _keypoints, keypoints);
+
 	// Estimate the pose
 	Mat pose = FindPoseProcess(keypoints, matches, error);
 
 	// Free Values
 	for (auto match : matches) delete match;
 
-	// TODO: Perform Previous Updating
+	// Perform Previous Updating
+	if (freePrevious) delete _frame;
+	_frame = frame; _keypoints.clear(); for (auto point : keypoints) _keypoints.push_back(point);
 
 	// Return the pose
 	return pose;
@@ -258,4 +264,25 @@ float FastTracker::ExtractDepth(Mat& depth, const Point2f& location)
 	if (x < 0 || y < 0 || x >= depth.cols || y >= depth.rows) return 0;
 	auto data = (float *) depth.data; auto index = x + y * depth.cols;
 	return data[index];
+}
+
+/**
+ * @brief Show the set of corresponding points wrt the system
+ * @param frame The stereo frame
+ * @param matches The points that matched
+ * @param keypoints_1 All the feature points for the first image
+ * @param keypoints_2 All the feature points for the second image
+ */
+void FastTracker::ShowMatchingPoints(NVLib::StereoFrame& frame, vector<FeatureMatch *>& matches, vector<KeyPoint>& keypoints_1, vector<KeyPoint>& keypoints_2) 
+{
+	auto displayMatches = vector<NVLib::FeatureMatch>();
+	for (auto& match : matches) 
+	{	
+		auto id_1 = match->GetFirstId(); auto id_2 = match->GetSecondId();
+		auto m = NVLib::FeatureMatch(keypoints_1[id_1].pt, keypoints_2[id_2].pt);
+		displayMatches.push_back(m);
+	}
+
+    NVLib::DisplayUtils::ShowStereoFeatures("Features", &frame, 1000, displayMatches, Vec3b(0, 0, 255));
+    waitKey();
 }

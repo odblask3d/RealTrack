@@ -15,7 +15,9 @@ using namespace std;
 using namespace cv;
 
 #include <NVLib/PoseUtils.h>
+#include <NVLib/DisplayUtils.h>
 #include <NVLib/Model/DepthFrame.h>
+#include <NVLib/Model/StereoFrame.h>
 
 #include "Calibration.h"
 #include "FastDetector.h"
@@ -46,5 +48,6 @@ namespace NVL_App
 		void EstimateError(Mat& camera, Mat& pose, vector<Point3f>& scenePoints, vector<Point2f>& imagePoints, Vec2d& error);
 
 		float ExtractDepth(Mat& depth, const Point2f& location);
+		void ShowMatchingPoints(NVLib::StereoFrame& frame, vector<FeatureMatch *>& matches, vector<KeyPoint>& keypoints_1, vector<KeyPoint>& keypoints_2);
 	};
 }

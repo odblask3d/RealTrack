@@ -52,6 +52,7 @@ void Engine::Run()
     auto firstFrame = LoadUtils::LoadFrame(_folder, 0);
     auto tracker = FastTracker(_calibration, firstFrame);
 
+
     _logger->Log(1, "Estimating the pose of frame 1");
     auto frame = LoadUtils::LoadFrame(_folder, 1); auto error = Vec2d();
     auto pose = tracker.GetPose(frame, error, true);
@@ -63,4 +64,23 @@ void Engine::Run()
 
     _logger->Log(1, "Free working variables");
     delete frame;
+}
+
+//--------------------------------------------------
+// Utility Methods
+//--------------------------------------------------
+
+/**
+ * @brief Add the functionality to convert given points
+ * @param floatPoints The list of points that we are converting
+ * @param outputs The output points that we are converting
+ */
+void Engine::ConvertPoints(vector<Point2f>& floatPoints, vector<Point>& outputs) 
+{
+    for (auto& point : floatPoints) 
+    {
+        auto x = (int) round(point.x);
+        auto y = (int) round(point.y);
+        outputs.push_back(Point(x,y));
+    }
 }
