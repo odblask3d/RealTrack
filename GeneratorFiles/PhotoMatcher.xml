@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<class>
+
+    <namespace>NVL_App</namespace>
+    <solution>RealTrackLib</solution>
+    <name>PhotoMatcher</name>
+    <description>A photometric refiner (with a good initialization)</description>
+
+    <includes>
+        <include name="iostream" namespace="std" local="false" />
+        <include name="opencv2/opencv.hpp" namespace="cv" local="false" />
+        <include name="minpack.h" local="false" />
+        <include name="PoseImage.h" local="true" />
+    </includes>
+
+    <variables>
+        <variable type="PoseImage *" name="poseImage" code="00" />
+        <variable type="static PhotoMatcher *" name="link" code="00" />
+    </variables>
+
+    <constructors>
+
+        <constructor type="custom" inline="false">
+            <parameter type="PhotoImage *" name="photoImage" description="The photo image that we are tracking from" />
+        </constructor>
+
+    </constructors>
+
+    <methods>
+
+        <!-- Perform Refinement -->
+        <method section="Refinement" access="public" return="Mat" name="Refine" description="Refine a pose estimation" inline="false">
+            <parameter type="Mat&" name="initialPose" description="The initial pose guess" />
+            <parameter type="Mat&" name="matchImage" description="The image that we are matching against" />
+        </method>
+
+        <!-- Find Error -->
+        <method section="Error Handlers" access="private" return="void" name="GetError" description="Defines the logic to find the error" inline="false">
+            <parameter type="double *" name="inputs" description="The input parameters that we are processing from" />
+            <parameter type="double *" name="errors" description="The list of output errors associated with the inputs" />
+        </method>    
+
+        <!-- Error Callback -->
+        <method section="Error Handlers" modifiers="static" access="private" return="void" name="Callback" description="The callback for cminpack" inline="false">
+            <parameter type="int *" name="m" description="The number of parameters" />
+            <parameter type="int *" name="n" description="The number of equations" />
+            <parameter type="double *" name="x" description="The parameter values" />
+            <parameter type="double *" name="fvec" description="The errors associated with the parameters" />
+            <parameter type="int *" name="iflag" description="The flag values that we are using" />
+        </method>    
+
+    </methods>
+
+</class>

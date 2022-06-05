@@ -42,30 +42,29 @@ Mat PoseImage::GetImage(Mat& pose)
  * @brief Get the score of the image with a match image
  * @param pose The pose of the image we are getting
  * @param match The image we are matching with
- * @param minOverlap The percentage minimum overlap allowed
  * @return Mat Returns a Mat
  */
-double PoseImage::GetScore(Mat& pose, Mat& match, double minOverlap)
+double PoseImage::GetScore(Mat& pose, Mat& matchImage)
 {
 	Mat tcloud = NVLib::CloudUtils::TransformCloud(_cloud, pose);
 	Mat imagePoints = NVLib::CloudUtils::ProjectImagePoints(_camera, tcloud);
 	auto parts = vector<Mat>(); split(imagePoints, parts);
 	Mat mapx; parts[0].convertTo(mapx, CV_32FC1);
 	Mat mapy; parts[1].convertTo(mapy, CV_32FC1);
-	Mat samples; remap(match, samples, mapx, mapy, INTER_CUBIC);
+	Mat samples; remap(matchImage, samples, mapx, mapy, INTER_CUBIC);
 
 	auto cinput = (double*)_cloud.data;
 	auto counter = 0; auto pinput = (double *) imagePoints.data; auto totalScore = 0.0;
-	for (auto row = 0; row < match.rows; row++)
+	for (auto row = 0; row < matchImage.rows; row++)
 	{
-		for (auto column = 0; column < match.cols; column++)
+		for (auto column = 0; column < matchImage.cols; column++)
 		{
 			// Get the index
-			auto index = column + row * match.cols;
+			auto index = column + row * matchImage.cols;
 			
 			// Figure out if we are within range
 			auto x = pinput[index * 2 + 0]; auto y = pinput[index * 2 + 1];
-			if (x < 0 || x >= match.cols || y < 0 || y >= match.rows) continue;
+			if (x < 0 || x >= matchImage.cols || y < 0 || y >= matchImage.rows) continue;
 
 			// Get the match color
 			auto c11 = (int)samples.data[index * 3 + 0];
@@ -85,11 +84,8 @@ double PoseImage::GetScore(Mat& pose, Mat& match, double minOverlap)
 		}
 	}
 
-	// Determine if enough points were encountered
-	auto score = 0.0;
-	auto totalPixels = match.rows * match.cols;
-	if ( counter == 0 || ( (double)counter / totalPixels < minOverlap / 100.0)) score = 255;
-	else score = (totalScore / counter);
+	// Determine the average score
+	auto score = (totalScore / counter);
 
 	// Return the result
 	return score;

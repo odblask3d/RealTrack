@@ -29,7 +29,7 @@ namespace NVL_App
 		PoseImage(Mat& camera, NVLib::DepthFrame * frame);
 
 		Mat GetImage(Mat& pose);
-		double GetScore(Mat& pose, Mat& match, double minOverlap);
+		double GetScore(Mat& pose, Mat& matchImage);
 
 		inline Mat& GetCloud() { return _cloud; }
 	};

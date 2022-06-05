@@ -61,11 +61,11 @@ void Engine::Run()
     cout << "Reprojection Error: " << error[0] << " ± " << error[1] << endl;
     cout << "----------------- End POSE extraction" << endl;
 
-    _logger->Log(1, "Showing the transform image");
+    _logger->Log(1, "Generating a pose image");
     Mat camera = _calibration->GetMatrix(); 
     auto poseImage = PoseImage(camera, firstFrame);
-    Mat warpImage = poseImage.GetImage(pose); 
-    NVLib::DisplayUtils::ShowToggleImages("Toggle", warpImage, frame->GetColor(), 1000);
+    auto initialError = poseImage.GetScore(pose, frame->GetColor());
+    _logger->Log(1, "Initial Error: %f", initialError);
 
     _logger->Log(1, "Free working variables");
     delete firstFrame; delete frame;

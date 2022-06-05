@@ -16,4 +16,6 @@ add_library (RealTrackLib STATIC
 	FastDetector.cpp
 	FastTracker.cpp
 	PoseImage.cpp
+	PhotoMatcher.cpp
 )
+
