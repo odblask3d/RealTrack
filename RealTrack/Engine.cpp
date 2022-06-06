@@ -59,7 +59,7 @@ void Engine::Run()
     Mat initialPose = Mat_<double>::eye(4,4); SaveUtils::SavePose(_outputFolder, initialPose, 0);
     SaveUtils::SaveFrame(_outputFolder, firstFrame, 0);
 
-    auto index = 1;
+    auto index = 1; auto trajectory = Trajectory();
 
     for (auto i = 1; i < _imageCount; i++) 
     {
@@ -86,6 +86,7 @@ void Engine::Run()
         _logger->Log(1, "Refining pose");
         auto refiner = PhotoMatcher(&poseImage);
         pose = refiner.Refine(pose, frame->GetColor());
+        trajectory.AddPose(pose);
 
         _logger->Log(1, "Setting the new frame");
         counter = poseImage.WarpCounter(pose, counter);
@@ -102,4 +103,8 @@ void Engine::Run()
         auto key = waitKey(30);
         if (key == 27) break;
     }
+
+    _logger->Log(1, "Writing the trajectory to disk");
+    auto trajectoryPath = NVLib::FileUtils::PathCombine(_outputFolder, "path.ply");
+    trajectory.Save(trajectoryPath);
 }

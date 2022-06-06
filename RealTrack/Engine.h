@@ -21,6 +21,7 @@ using namespace std;
 #include <RealTrackLib/PhotoMatcher.h>
 #include <RealTrackLib/MapMerger.h>
 #include <RealTrackLib/SaveUtils.h>
+#include <RealTrackLib/Trajectory.h>
 
 namespace NVL_App
 {

@@ -19,7 +19,10 @@ add_library (RealTrackLib STATIC
 	PhotoMatcher.cpp
 	MapMerger.cpp
 	SaveUtils.cpp
+	Trajectory.cpp
 )
+
+
 
 
 

@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<class>
+
+    <namespace>NVL_App</namespace>
+    <solution>RealTrackLib</solution>
+    <name>Trajectory</name>
+    <description>Keeps track of the position of the camera</description>
+
+    <includes>
+        <include name="iostream" namespace="std" local="false" />
+        <include name="opencv2/opencv.hpp" namespace="cv" local="false" />
+    </includes>
+
+    <variables>
+        <variable type="Mat" name="currentPose" code="10" />
+        <variable type="vector<Point3d>" name="trajectory" code="10" />
+    </variables>
+
+    <constructors>
+        <constructor type="empty" inline="false" />
+    </constructors>
+
+    <methods>
+
+        <!-- Add a pose to the collection -->
+        <method section="Add" access="public" return="void" name="AddPose" description="Add a pose to the system" inline="false">
+            <parameter type="Mat&" name="pose" description="Add a new pose to the collection" />
+        </method>
+
+        <!-- Save the trajectory to a play file -->
+        <method section="Save" access="public" return="void" name="Save" description="Save the collection to disk" inline="false">
+            <parameter type="const string&" name="path" description="The path that we are saving to" />
+        </method>
+
+    </methods>
+
+</class>
