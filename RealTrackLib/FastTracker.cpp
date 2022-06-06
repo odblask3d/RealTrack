@@ -38,32 +38,28 @@ FastTracker::~FastTracker()
 /**
  * @brief Add the logic to estimate the pose from the next frame within the sequence
  * @param frame The frame that we are getting the pose from
+ * @param keypoints The keypoints associated with the new frame
  * @param error The output reprojection error
- * @param freePrevious Indicates whether the memory for the previous frame can be freed or not
  * @return Mat Returns a Mat
  */
-Mat FastTracker::GetPose(NVLib::DepthFrame * frame, Vec2d& error, bool freePrevious)
+Mat FastTracker::GetPose(NVLib::DepthFrame * frame, vector<KeyPoint>& keypoints, Vec2d& error)
 {
 	// Extract the features that we need
-	auto keypoints = vector<KeyPoint>(); _detector->Extract(frame->GetColor(), keypoints);
+	_detector->Extract(frame->GetColor(), keypoints);
 
 	// Find corresponding features
 	_detector->SetFrame(_frame->GetColor(), frame->GetColor());
 	auto matches = vector<FeatureMatch *>(); _detector->Match(_keypoints, keypoints, matches);
 
 	// DEBUG: Show the correspondences
-	// auto stereoFrame = NVLib::StereoFrame(_frame->GetColor(), frame->GetColor());
-	// ShowMatchingPoints(stereoFrame, matches, _keypoints, keypoints);
+	//auto stereoFrame = NVLib::StereoFrame(_frame->GetColor(), frame->GetColor());
+	//ShowMatchingPoints(stereoFrame, matches, _keypoints, keypoints);
 
 	// Estimate the pose
 	Mat pose = FindPoseProcess(keypoints, matches, error);
 
 	// Free Values
 	for (auto match : matches) delete match;
-
-	// Perform Previous Updating
-	if (freePrevious) delete _frame;
-	_frame = frame; _keypoints.clear(); for (auto point : keypoints) _keypoints.push_back(point);
 
 	// Return the pose
 	return pose;
@@ -165,7 +161,7 @@ void FastTracker::FilterBadDepth(vector<Point3f>& scenePoints, vector<Point2f>& 
 	{
 		auto scenePoint = scenePoints[i]; auto imagePoint = imagePoints[i];
 
-		if (scenePoint.z > 300 && scenePoint.z < 2500) 
+		if (scenePoint.z > 300 && scenePoint.z < 2000) 
 		{
 			ascenePoints.push_back(scenePoint); aimagePoints.push_back(imagePoint);
 		}
@@ -201,7 +197,7 @@ Mat FastTracker::EstimatePose(Mat& camera, vector<Point3f>& scenePoints, vector<
 
 	// Perform the pose estimation
 	Mat nodistortion = Mat_<double>::zeros(4,1);
-	Vec3d rvec, tvec; solvePnPRansac(dscene, dimage, camera, nodistortion, rvec, tvec, false, 9000, 8, 0.8, noArray(), SOLVEPNP_ITERATIVE);
+	Vec3d rvec, tvec; solvePnPRansac(dscene, dimage, camera, nodistortion, rvec, tvec, false, 1e4, 10, 0.9, noArray(), SOLVEPNP_DLS);
 
 	// Return the result
 	return NVLib::PoseUtils::Vectors2Pose(rvec, tvec);
@@ -246,6 +242,24 @@ void FastTracker::EstimateError(Mat& camera, Mat& pose, vector<Point3f>& scenePo
 	auto mean = Scalar(); auto stddev = Scalar();
 	cv::meanStdDev(errors, mean, stddev);
 	error[0] = mean[0]; error[1] = stddev[0];
+}
+
+//--------------------------------------------------
+// UpdateNextFrame
+//--------------------------------------------------
+
+/**
+ * @brief Add the logic to advance to the next frame
+ * @param frame The new frame that we are adding
+ * @param keypoints The key points that we are adding
+ * @param free Indicates whether we want to delete the value
+ */
+void FastTracker::UpdateNextFrame(NVLib::DepthFrame * frame, vector<KeyPoint>& keypoints, bool free) 
+{
+	// Perform Previous Updating
+	if (free) delete _frame; _frame = frame; 
+	_keypoints.clear(); 
+	for (auto point : keypoints) _keypoints.push_back(point);
 }
 
 //--------------------------------------------------

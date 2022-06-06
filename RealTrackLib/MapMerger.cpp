@@ -68,7 +68,7 @@ Mat MapMerger::Merge(Mat& map1, Mat& map2, Mat& counters)
 			}
 			
 			// Update the counter
-			counters.data[index] = saturate_cast<uchar>(count);
+			counters.data[index] = min(count, 20);
 		}
 	}
 

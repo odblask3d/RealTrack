@@ -24,7 +24,7 @@ namespace NVL_App
 
 		inline static bool IsValid(float Z) 
 		{
-			return Z > 300 && Z < 3000;
+			return Z > 300;
 		}
 
 

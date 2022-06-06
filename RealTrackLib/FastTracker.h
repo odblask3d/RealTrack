@@ -35,7 +35,9 @@ namespace NVL_App
 		FastTracker(Calibration * calibration, NVLib::DepthFrame * firstFrame);
 		~FastTracker();
 
-		Mat GetPose(NVLib::DepthFrame * frame, Vec2d& error, bool freePrevious);
+		Mat GetPose(NVLib::DepthFrame * frame, vector<KeyPoint>& keypoints, Vec2d& error);
+
+		void UpdateNextFrame(NVLib::DepthFrame * frame, vector<KeyPoint>& keypoints, bool free);
 
 		inline NVLib::DepthFrame *& GetFrame() { return _frame; }
 		inline vector<KeyPoint>& GetKeypoints() { return _keypoints; }

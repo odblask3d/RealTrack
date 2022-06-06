@@ -48,47 +48,46 @@ Engine::~Engine()
  */
 void Engine::Run()
 {
-    auto index = 10;
-
-    _logger->Log(1, "Creating a fast tracker");
-    auto firstFrame = LoadUtils::LoadFrame(_folder, index);
+    _logger->Log(1, "Loading the first frame");
+    auto firstFrame = LoadUtils::LoadFrame(_folder, 0);
     auto tracker = FastTracker(_calibration, firstFrame);
+    Mat camera = _calibration->GetMatrix();
+    Mat counter = Mat_<int>(firstFrame->GetColor().size()); counter.setTo(1);
 
-    _logger->Log(1, "Estimating the pose of frame 1");
-    auto frame = LoadUtils::LoadFrame(_folder, index + 2); auto error = Vec2d();
-    Mat pose = tracker.GetPose(frame, error, false);
+    for (auto i = 1; i < _imageCount; i++) 
+    {
+        _logger->Log(1, "Processing frame: %i", i);
 
-    cout << endl << "----------------- Results: POSE extraction" << endl;
-    cout << pose << endl;
-    cout << "Reprojection Error: " << error[0] << " ± " << error[1] << endl;
-    cout << "----------------- End POSE extraction" << endl << endl;
+        auto frame = LoadUtils::LoadFrame(_folder, i); auto error = Vec2d();
+        auto keypoints = vector<KeyPoint>(); Mat pose = tracker.GetPose(frame, keypoints, error);
 
-    _logger->Log(1, "Generating a pose image");
-    Mat camera = _calibration->GetMatrix(); 
-    auto poseImage = PoseImage(camera, firstFrame);
-    auto errors = vector<double>(); auto initialError = poseImage.GetScore(pose, frame->GetColor(), errors);
-    _logger->Log(1, "Initial Error: %f", initialError);
+        cout << endl << "----------------- Results: POSE extraction" << endl;
+        cout << pose << endl;
+        cout << "Reprojection Error: " << error[0] << " ± " << error[1] << endl;
+        cout << "----------------- End POSE extraction" << endl << endl;
 
-    _logger->Log(1, "Launching the refinement of the pose");
-    auto refiner = PhotoMatcher(&poseImage);
-    Mat pose2 = refiner.Refine(pose, frame->GetColor());
+        if (error[0] > 3) 
+        {
+            _logger->Log(1, "Tracking Failed");
+            delete frame;
+            continue;
+        }
 
-    _logger->Log(1, "Create a merge map");
-    Mat counter_1 = Mat_<int>(frame->GetColor().size()); counter_1.setTo(1);
-    Mat counter_2 = poseImage.WarpCounter(pose2, counter_1);
-    Mat depthmap_1 = poseImage.GetDepth(pose2);
-    Mat depthmap_2 = frame->GetDepth().clone();
-    Mat depthmap_3 = MapMerger::Merge(depthmap_1, depthmap_2, counter_2);
-    Mat displayCounter = counter_2 * 100;
+        _logger->Log(1, "Creating a pose image");
+        auto poseImage = PoseImage(camera, tracker.GetFrame());
 
-    _logger->Log(1, "Displaying Merging Results");
-    NVLib::DisplayUtils::ShowFloatMap("Depth 1", depthmap_1, 1000);
-    NVLib::DisplayUtils::ShowFloatMap("Depth 2", depthmap_2, 1000);
-    NVLib::DisplayUtils::ShowFloatMap("Depth 3", depthmap_3, 1000);
-    NVLib::DisplayUtils::ShowImage("Counter", displayCounter, 1000);
-    imwrite("Merge.tiff", depthmap_3);
-    waitKey();
+        _logger->Log(1, "Refining pose");
+        auto refiner = PhotoMatcher(&poseImage);
+        pose = refiner.Refine(pose, frame->GetColor());
 
-    _logger->Log(1, "Free working variables");
-    delete firstFrame; delete frame;
+        _logger->Log(1, "Setting the new frame");
+        counter = poseImage.WarpCounter(pose, counter);
+        Mat previousDepth = poseImage.GetDepth(pose);
+        frame->GetDepth() = MapMerger::Merge(previousDepth, frame->GetDepth(), counter);
+        tracker.UpdateNextFrame(frame, keypoints, true);
+
+        NVLib::DisplayUtils::ShowFloatMap("Depth", frame->GetDepth(), 1000);
+        auto key = waitKey(30);
+        if (key == 27) break;
+    }
 }
