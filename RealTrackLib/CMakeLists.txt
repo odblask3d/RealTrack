@@ -17,5 +17,7 @@ add_library (RealTrackLib STATIC
 	FastTracker.cpp
 	PoseImage.cpp
 	PhotoMatcher.cpp
+	MapMerger.cpp
 )
+
 

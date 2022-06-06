@@ -79,7 +79,9 @@ Mat PoseImage::GetDepth(Mat &pose)
 			auto imageIndex = u + v * result.cols;
 
 			// Perform Updates
-			output[imageIndex] = Z;
+			auto existingZ = output[imageIndex];
+			if (existingZ < 300 || existingZ > 2500) existingZ = 3000;
+			output[imageIndex] = (Z < existingZ) ? Z : existingZ; // This formulation is hoped to avoid occlusions
 		}
 	}
 

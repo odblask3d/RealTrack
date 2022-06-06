@@ -73,60 +73,22 @@ void Engine::Run()
     auto refiner = PhotoMatcher(&poseImage);
     Mat pose2 = refiner.Refine(pose, frame->GetColor());
 
-    _logger->Log(1, "Performing counters test");
-    Mat counter_1 = CreateCounter(firstFrame->GetDepth());
+    _logger->Log(1, "Create a merge map");
+    Mat counter_1 = Mat_<int>(frame->GetColor().size()); counter_1.setTo(1);
     Mat counter_2 = poseImage.WarpCounter(pose2, counter_1);
-    Mat depthmap = poseImage.GetDepth(pose2);
-    imshow("Counter 1", counter_1); imshow("Counter 2", counter_2); 
-    NVLib::DisplayUtils::ShowFloatMap("Depth", depthmap, 1000);
-    waitKey();
+    Mat depthmap_1 = poseImage.GetDepth(pose2);
+    Mat depthmap_2 = frame->GetDepth().clone();
+    Mat depthmap_3 = MapMerger::Merge(depthmap_1, depthmap_2, counter_2);
+    Mat displayCounter = counter_2 * 100;
 
+    _logger->Log(1, "Displaying Merging Results");
+    NVLib::DisplayUtils::ShowFloatMap("Depth 1", depthmap_1, 1000);
+    NVLib::DisplayUtils::ShowFloatMap("Depth 2", depthmap_2, 1000);
+    NVLib::DisplayUtils::ShowFloatMap("Depth 3", depthmap_3, 1000);
+    NVLib::DisplayUtils::ShowImage("Counter", displayCounter, 1000);
+    imwrite("Merge.tiff", depthmap_3);
+    waitKey();
 
     _logger->Log(1, "Free working variables");
     delete firstFrame; delete frame;
-}
-
-//--------------------------------------------------
-// Utility Methods
-//--------------------------------------------------
-
-/**
- * @brief Add the functionality to convert given points
- * @param floatPoints The list of points that we are converting
- * @param outputs The output points that we are converting
- */
-void Engine::ConvertPoints(vector<Point2f>& floatPoints, vector<Point>& outputs) 
-{
-    for (auto& point : floatPoints) 
-    {
-        auto x = (int) round(point.x);
-        auto y = (int) round(point.y);
-        outputs.push_back(Point(x,y));
-    }
-}
-
-/**
- * @brief Add the counter
- * @param depthMap The depth map that we are dealing with
- * @return The result
- */
-Mat Engine::CreateCounter(Mat& depthMap) 
-{
-    Mat result = Mat_<uchar>(depthMap.size());
-
-    auto depthData = (float *) depthMap.data;
-
-    for (auto row = 0; row < depthMap.rows; row++) 
-    {
-        for (auto column = 0; column < depthMap.cols; column++) 
-        {
-            auto index = column + row * depthMap.cols;
-            auto Z = depthData[index];
-
-            if (Z < 300 || Z > 2500) result.data[index] = 0;
-            else result.data[index] = 100;
-        }
-    }
-
-    return result;
 }

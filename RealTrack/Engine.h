@@ -19,6 +19,7 @@ using namespace std;
 #include <RealTrackLib/FastTracker.h>
 #include <RealTrackLib/PoseImage.h>
 #include <RealTrackLib/PhotoMatcher.h>
+#include <RealTrackLib/MapMerger.h>
 
 namespace NVL_App
 {
@@ -37,8 +38,5 @@ namespace NVL_App
 		~Engine();
 
 		void Run();
-	private:
-		void ConvertPoints(vector<Point2f>& floatPoints, vector<Point>& outputs);
-		Mat CreateCounter(Mat& depthMap);
 	};
 }
