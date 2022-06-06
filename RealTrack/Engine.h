@@ -20,6 +20,7 @@ using namespace std;
 #include <RealTrackLib/PoseImage.h>
 #include <RealTrackLib/PhotoMatcher.h>
 #include <RealTrackLib/MapMerger.h>
+#include <RealTrackLib/SaveUtils.h>
 
 namespace NVL_App
 {
@@ -29,7 +30,8 @@ namespace NVL_App
 		NVLib::Parameters * _parameters;
 		NVLib::Logger* _logger;
 
-		string _folder;
+		string _inputFolder;
+		string _outputFolder;
 		int _imageCount;
 		Calibration * _calibration;
 

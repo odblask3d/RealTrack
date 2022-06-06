@@ -18,6 +18,8 @@ add_library (RealTrackLib STATIC
 	PoseImage.cpp
 	PhotoMatcher.cpp
 	MapMerger.cpp
+	SaveUtils.cpp
 )
+
 
 

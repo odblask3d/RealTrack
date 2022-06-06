@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<class>
+
+    <namespace>NVL_App</namespace>
+    <solution>RealTrackLib</solution>
+    <name>SaveUtils</name>
+    <description>Add the logic to save the output to disk</description>
+
+    <includes>
+        <include name="iostream" namespace="std" local="false" />
+        <include name="opencv2/opencv.hpp" namespace="cv" local="false" />
+    </includes>
+
+    <methods>
+
+        <!-- Write depth map to disk-->
+        <method section="SaveDepth" modifiers="static" access="public" return="void" name="SaveDepth" description="Save the depth map to disk" inline="false">
+            <parameter type="const string&" name="folder" description="The folder that we are writing to" />
+            <parameter type="Mat" name="depth" description="The depth map that we are writing to disk" />
+        </method>
+
+        <!-- Write pose to disk-->
+        <method section="SavePose" modifiers="static" access="public" return="void" name="SavePose" description="Save the pose to disk" inline="false">
+            <parameter type="const string&" name="folder" description="the folder that we are writing to" />
+            <parameter type="Mat" name="pose" description="The pose that we are writing to disk" />
+        </method>
+
+    </methods>
+
+</class>
