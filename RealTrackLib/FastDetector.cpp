@@ -140,7 +140,7 @@ Mat FastDetector::BuildPointDescriptor(vector<Point2f>& points)
 void FastDetector::FilterOnError(vector<uchar>& status, vector<float>& errors, vector<FeatureMatch *>& matches) 
 {
 	auto counter = 0;
-	for (auto i = matches.begin(); i != matches.end(); i++) 
+	for (auto i = matches.begin(); i != matches.end(); ) 
 	{
 		auto match = *i;
 		
@@ -150,6 +150,7 @@ void FastDetector::FilterOnError(vector<uchar>& status, vector<float>& errors, v
 			delete match;	
 			if (i == matches.end()) break;
 		}
+		else i++;
 	}
 }
 
